@@ -261,6 +261,11 @@ namespace KeyboardEventHandlers
                 // if not a mod key, check for chord stuff
                 if (!resetChordsResults.CurrentKeyIsModifierKey && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    if (it->first.exactMatch == true && !it->first.IsKeyboardStateClearExceptShortcut(ii))
+                    {
+                        continue;
+                    }
+
                     if (itShortcut.HasChord())
                     {
                         if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
@@ -535,6 +540,12 @@ namespace KeyboardEventHandlers
                 if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
                     break;
+                }
+
+
+                if (it->first.exactMatch == true && !it->first.IsKeyboardStateClearExceptShortcut(ii))
+                {
+                    continue;
                 }
 
                 // Get the common keys between the two shortcuts
