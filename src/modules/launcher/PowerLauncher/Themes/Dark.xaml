@@ -7,6 +7,13 @@
     mc:Ignorable="options">
 
     <!--  Metadata  -->
+    <Color x:Key="ApplicationBackgroundColor">#202020</Color>
+    <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="White" />
+    <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="White" />
+    <SolidColorBrush x:Key="ListViewItemForeground" Color="White" />
+
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <!-- Example black color -->
     <system:String x:Key="Theme.Name">Dark.Accent1</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
     <system:String x:Key="Theme.DisplayName">Accent1 (Dark)</system:String>
