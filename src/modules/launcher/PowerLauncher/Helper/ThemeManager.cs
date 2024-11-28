@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Threading;
 using ControlzEx.Theming;
 using ManagedCommon;
 using Microsoft.Office.Interop.OneNote;
@@ -36,86 +38,95 @@ namespace PowerLauncher.Helper
 
         private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
+            ManagedCommon.Theme theme = ThemeExtensions.GetCurrentTheme();
             if (e.Category == UserPreferenceCategory.General)
             {
-                // Theme has changed, update resources
                 UpdateTheme();
+            }
+            else if (e.Category == UserPreferenceCategory.Color)
+            {
+                if (_currentTheme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
+                {
+                    UpdateTheme();
+                }
+            }
+        }
+
+        public void PrintKeysToFile(ResourceDictionary resourceDictionary, string filePath)
+        {
+            try
+            {
+                // Open the file for writing
+                using (StreamWriter writer = new(filePath, false))
+                {
+                    // Iterate through all the keys in the resource dictionary
+                    foreach (object key in resourceDictionary.Keys)
+                    {
+                        writer.WriteLine(key.ToString());  // Write each key to the file
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
             }
         }
 
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
-#pragma warning disable WPF0001
-            if (theme == ManagedCommon.Theme.Dark)
+            _mainWindow.Resources.MergedDictionaries.Clear();
+            string themeString = theme switch
             {
-                _mainWindow.ThemeMode = ThemeMode.Dark;
-                ImageLoader.UpdateIconPath(ManagedCommon.Theme.Dark);
-                ThemeChanged?.Invoke(ManagedCommon.Theme.Dark, ManagedCommon.Theme.Light);
-            }
-            else if (theme == ManagedCommon.Theme.Light)
+                ManagedCommon.Theme.Light => "Themes/Light.xaml",
+                ManagedCommon.Theme.Dark => "Themes/Dark.xaml",
+                ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
+                ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
+                ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
+                _ => "Themes/HighContrastBlack.xaml",
+            };
+
+            if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
             {
-                _mainWindow.ThemeMode = ThemeMode.Light;
-                ImageLoader.UpdateIconPath(ManagedCommon.Theme.Light);
-                ThemeChanged?.Invoke(ManagedCommon.Theme.Light, ManagedCommon.Theme.Dark);
+                // Step 2: Create a new ResourceDictionary pointing to Fluent.xaml
+                ResourceDictionary fluentThemeDictionary = new()
+                {
+                    Source = new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml", UriKind.Absolute),
+                };
+                _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
             }
             else
             {
-                ImageLoader.UpdateIconPath(theme);
-                _mainWindow.ThemeMode = ThemeMode.None;
-                string themeString = theme switch
-                {
-                    ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
-                    ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
-                    ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
-                    _ => "Themes/HighContrastBlack.xaml",
-                };
-                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
-                {
-                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
-                }
-
-                _mainWindow.Resources.MergedDictionaries.Clear();
-                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
-                {
-                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
-                }
-
-                /* _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml", UriKind.Absolute),
-                });*/
                 _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
-                    Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
-                });
-                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
-                {
-                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
-                }
-
-                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri(themeString, UriKind.Relative),
+                    Source = new Uri("Styles/FluentHC.xaml", UriKind.Relative),
                 });
             }
+
+            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
+            });
+            ImageLoader.UpdateIconPath(theme);
+            ThemeChanged(theme, _currentTheme);
+            _currentTheme = theme;
         }
 
         public void UpdateTheme()
         {
-            _currentTheme = _settings.Theme;
+            ManagedCommon.Theme newTheme = _settings.Theme;
             ManagedCommon.Theme theme = ThemeExtensions.GetHighContrastBaseType();
             if (theme != ManagedCommon.Theme.Light)
             {
-                _currentTheme = theme;
+                newTheme = theme;
             }
             else if (_settings.Theme == ManagedCommon.Theme.System)
             {
-                _currentTheme = ThemeExtensions.GetCurrentTheme();
+                newTheme = ThemeExtensions.GetCurrentTheme();
             }
 
             _mainWindow.Dispatcher.Invoke(() =>
             {
-                SetSystemTheme(_currentTheme);
+                SetSystemTheme(newTheme);
             });
         }
 

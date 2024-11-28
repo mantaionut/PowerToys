@@ -193,10 +193,13 @@ namespace PowerLauncher
 
             // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
             _viewModel.RegisterHotkey(_hwndSource.Handle);
-            IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
-            var attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
-            var preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
-            DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            if (OSVersionHelper.IsWindows11())
+            {
+                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
