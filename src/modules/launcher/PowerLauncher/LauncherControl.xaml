@@ -121,6 +121,8 @@
             FontSize="20"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-            Text="&#xE094;" />
+            Text="&#xE094;"
+            Grid.Column="0"
+            Margin="10,7,0,0" /> />
     </Grid>
 </UserControl>
