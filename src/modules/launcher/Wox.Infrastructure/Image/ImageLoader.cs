@@ -235,12 +235,30 @@ namespace Wox.Infrastructure.Image
                     // To not run into the crash, we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.
                     // Also don't get thumbnail if the GenerateThumbnailsFromFiles option is off.
                     type = ImageType.File;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    Log.Info($"GetThumbnailResult generateThumbnailsFromFiles false for {path}", MethodBase.GetCurrentMethod().DeclaringType);
+                    try
+                    {
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Exception($"Exception in GetThumbnail for {path}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        image = ImageCache[ErrorIconPath];
+                    }
                 }
                 else
                 {
                     type = ImageType.File;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.RESIZETOFIT);
+                    Log.Info($"GetThumbnailResult generateThumbnailsFromFiles true for {path}", MethodBase.GetCurrentMethod().DeclaringType);
+                    try
+                    {
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.RESIZETOFIT);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Exception($"Exception in GetThumbnail for {path}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        image = ImageCache[ErrorIconPath];
+                    }
                 }
             }
             else
