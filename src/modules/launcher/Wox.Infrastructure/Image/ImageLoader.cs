@@ -10,6 +10,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -31,6 +32,9 @@ namespace Wox.Infrastructure.Image
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 
         private static ImageHashGenerator _hashGenerator;
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
 
         public static string ErrorIconPath { get; set; } = Constant.LightThemedErrorIcon;
 
@@ -235,10 +239,11 @@ namespace Wox.Infrastructure.Image
                     // To not run into the crash, we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.
                     // Also don't get thumbnail if the GenerateThumbnailsFromFiles option is off.
                     type = ImageType.File;
-                    Log.Info($"GetThumbnailResult generateThumbnailsFromFiles false for {path}", MethodBase.GetCurrentMethod().DeclaringType);
                     try
                     {
+                        Log.Info($"[{Environment.CurrentManagedThreadId}][{GetCurrentThreadId()}] GetThumbnailResult generateThumbnailsFromFiles false for {path}", MethodBase.GetCurrentMethod().DeclaringType);
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                        Log.Info($"[{Environment.CurrentManagedThreadId}][{GetCurrentThreadId()}] GetThumbnailResult {path} done", MethodBase.GetCurrentMethod().DeclaringType);
                     }
                     catch (System.Exception e)
                     {
