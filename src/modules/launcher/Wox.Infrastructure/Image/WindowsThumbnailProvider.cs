@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -156,10 +157,50 @@ namespace Wox.Infrastructure.Image
             }
         }
 
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr SHGetFileInfo(
+        string pszPath,
+        uint dwFileAttributes,
+        ref SHFILEINFO psfi,
+        uint cbFileInfo,
+        uint uFlags);
+
+        private const uint SHGFIICON = 0x000000100;  // Retrieves the icon.
+        private const uint SHGFILARGEICON = 0x000000000; // Large icon
+        private const uint SHGFISMALLICON = 0x000000001; // Small icon
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct SHFILEINFO
+        {
+            public IntPtr HIcon;
+            public int IIcon;
+            public uint DwAttributes;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string SzDisplayName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+            public string SzTypeName;
+        }
+
+        public static Icon ExtractIconFromFile(string filePath, bool largeIcon = true)
+        {
+            SHFILEINFO shinfo = default(SHFILEINFO);
+            uint flags = SHGFIICON | (largeIcon ? SHGFILARGEICON : SHGFISMALLICON);
+
+            IntPtr result = SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), flags);
+
+            if (result == IntPtr.Zero)
+            {
+                return null; // Failed to retrieve icon
+            }
+
+            Icon icon = Icon.FromHandle(shinfo.HIcon);
+            return icon;
+        }
+
         public static IntPtr ExtractIconToHBitmap(string fileName)
         {
             // Extracts the icon associated with the file
-            using (System.Drawing.Icon thumbnailIcon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
+            using (System.Drawing.Icon thumbnailIcon = ExtractIconFromFile(fileName))
             {
                 // Convert to Bitmap
                 using (System.Drawing.Bitmap bitmap = thumbnailIcon.ToBitmap())
