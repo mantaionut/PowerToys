@@ -241,7 +241,7 @@ namespace Wox.Infrastructure.Image
                     type = ImageType.File;
                     try
                     {
-                        Log.Info($"[{Environment.CurrentManagedThreadId}][{GetCurrentThreadId()}] GetThumbnailResult generateThumbnailsFromFiles false for {path}", MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Info($"[{Environment.CurrentManagedThreadId}][{GetCurrentThreadId()}] GetThumbnailResultV2 generateThumbnailsFromFiles false for {path}", MethodBase.GetCurrentMethod().DeclaringType);
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
                         Log.Info($"[{Environment.CurrentManagedThreadId}][{GetCurrentThreadId()}] GetThumbnailResult {path} done", MethodBase.GetCurrentMethod().DeclaringType);
                     }
@@ -254,7 +254,7 @@ namespace Wox.Infrastructure.Image
                 else
                 {
                     type = ImageType.File;
-                    Log.Info($"GetThumbnailResult generateThumbnailsFromFiles true for {path}", MethodBase.GetCurrentMethod().DeclaringType);
+                    Log.Info($"GetThumbnailResultV2 generateThumbnailsFromFiles true for {path}", MethodBase.GetCurrentMethod().DeclaringType);
                     try
                     {
                         image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.RESIZETOFIT);
