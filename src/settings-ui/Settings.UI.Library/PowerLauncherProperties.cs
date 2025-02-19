@@ -94,6 +94,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("generate_thumbnails_from_files")]
         public bool GenerateThumbnailsFromFiles { get; set; }
 
+        [JsonPropertyName("use_thumbnails")]
+        public bool UseThumbnails { get; set; }
+
         [CmdConfigureIgnoreAttribute]
         public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32);
 
@@ -125,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchQueryTuningEnabled = false;
             SearchWaitForSlowResults = false;
             GenerateThumbnailsFromFiles = true;
+            UseThumbnails = true;
             UsePinyin = false;
             ShowPluginsOverview = 0;
             TitleFontSize = 16;

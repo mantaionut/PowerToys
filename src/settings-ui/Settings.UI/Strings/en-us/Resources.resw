@@ -718,8 +718,11 @@
   <data name="PowerLauncher_GenerateThumbnailsFromFiles.Header" xml:space="preserve">
     <value>Generate thumbnails from files</value>
   </data>
-  <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
-    <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
+    <data name="PowerLauncher_UseThumbnails.Header" xml:space="preserve">
+    <value>Enable thumbnails from files</value>
+  </data>
+  <data name="PowerLauncher_UseThumbnails.Description" xml:space="preserve">
+    <value>Results will try to generate thumbnails for files. For some users enabling this will cause crashes</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>

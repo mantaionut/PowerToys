@@ -141,8 +141,6 @@ namespace PowerLauncher
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
-                ImageLoader.Initialize();
-
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
                 _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
@@ -158,6 +156,8 @@ namespace PowerLauncher
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
+
+                ImageLoader.Initialize(_settings.GenerateThumbnailsFromFiles, _settings.UseThumbnails);
 
                 PluginManager.InitializePlugins(API);
 

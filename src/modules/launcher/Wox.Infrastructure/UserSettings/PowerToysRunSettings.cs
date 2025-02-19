@@ -266,6 +266,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool GenerateThumbnailsFromFiles { get; set; } = true;
 
+        public bool UseThumbnails { get; set; } = true;
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
     }

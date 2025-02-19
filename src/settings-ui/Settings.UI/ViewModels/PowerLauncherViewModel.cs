@@ -581,6 +581,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseThumbnails
+        {
+            get
+            {
+                return settings.Properties.UseThumbnails;
+            }
+
+            set
+            {
+                if (settings.Properties.UseThumbnails != value)
+                {
+                    settings.Properties.UseThumbnails = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public bool UsePinyin
         {
             get

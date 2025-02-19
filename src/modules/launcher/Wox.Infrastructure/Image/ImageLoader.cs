@@ -55,7 +55,7 @@ namespace Wox.Infrastructure.Image
             return fs.Read(buffer, 0, buffer.Length) == buffer.Length && pngSignature.SequenceEqual(buffer);
         }
 
-        public static void Initialize()
+        public static void Initialize(bool generateThumbnailsFromFiles, bool useThumbnails)
         {
             _hashGenerator = new ImageHashGenerator();
 
@@ -93,7 +93,7 @@ namespace Wox.Infrastructure.Image
                 {
                     foreach (var (path, _) in ImageCache.Usage)
                     {
-                        await LoadAsync(path, true);
+                        await LoadAsync(path, generateThumbnailsFromFiles, useThumbnails);
                     }
                 });
 
@@ -143,7 +143,7 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
-        private static async ValueTask<ImageResult> LoadInternalAsync(string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
+        private static async ValueTask<ImageResult> LoadInternalAsync(string path, bool generateThumbnailsFromFiles, bool useThumbnails, bool loadFullImage = false)
         {
             ImageResult imageResult;
             try
@@ -166,7 +166,7 @@ namespace Wox.Infrastructure.Image
                     return new ImageResult(imageSource, ImageType.Data);
                 }
 
-                imageResult = await Task.Run(() => GetThumbnailResult(ref path, generateThumbnailsFromFiles, loadFullImage));
+                imageResult = await Task.Run(() => GetThumbnailResult(ref path, generateThumbnailsFromFiles, useThumbnails, loadFullImage));
             }
             catch (System.Exception e)
             {
@@ -179,7 +179,7 @@ namespace Wox.Infrastructure.Image
             return imageResult;
         }
 
-        private static ImageResult GetThumbnailResult(ref string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
+        private static ImageResult GetThumbnailResult(ref string path, bool generateThumbnailsFromFiles, bool useThumbnails, bool loadFullImage = false)
         {
             ImageSource image;
             ImageType type = ImageType.Error;
@@ -229,18 +229,26 @@ namespace Wox.Infrastructure.Image
                         }
                     }
                 }
-                else if (!generateThumbnailsFromFiles || (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUseAcrobatAsProvider()))
+                else if (useThumbnails)
                 {
-                    // The PDF thumbnail provider from Adobe Reader and Acrobat Pro lets crash PT Run with an Dispatcher exception. (https://github.com/microsoft/PowerToys/issues/18166)
-                    // To not run into the crash, we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.
-                    // Also don't get thumbnail if the GenerateThumbnailsFromFiles option is off.
-                    type = ImageType.File;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    if (!generateThumbnailsFromFiles || (extension == ".pdf" && WindowsThumbnailProvider.DoesPdfUseAcrobatAsProvider()))
+                    {
+                        // The PDF thumbnail provider from Adobe Reader and Acrobat Pro lets crash PT Run with an Dispatcher exception. (https://github.com/microsoft/PowerToys/issues/18166)
+                        // To not run into the crash, we only request the icon of PDF files if the PDF thumbnail handler is set to Adobe Reader/Acrobat Pro.
+                        // Also don't get thumbnail if the GenerateThumbnailsFromFiles option is off.
+                        type = ImageType.File;
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    }
+                    else
+                    {
+                        type = ImageType.File;
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.RESIZETOFIT);
+                    }
                 }
                 else
                 {
-                    type = ImageType.File;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.RESIZETOFIT);
+                    image = ImageCache[ErrorIconPath];
+                    path = ErrorIconPath;
                 }
             }
             else
@@ -259,9 +267,9 @@ namespace Wox.Infrastructure.Image
 
         private const bool _enableImageHash = true;
 
-        public static async ValueTask<ImageSource> LoadAsync(string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
+        public static async ValueTask<ImageSource> LoadAsync(string path, bool generateThumbnailsFromFiles, bool useThumbnails, bool loadFullImage = false)
         {
-            var imageResult = await LoadInternalAsync(path, generateThumbnailsFromFiles, loadFullImage);
+            var imageResult = await LoadInternalAsync(path, generateThumbnailsFromFiles, useThumbnails, loadFullImage);
 
             var img = imageResult.ImageSource;
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)

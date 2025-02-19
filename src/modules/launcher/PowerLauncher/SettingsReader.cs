@@ -173,6 +173,11 @@ namespace PowerLauncher
                         _settings.GenerateThumbnailsFromFiles = overloadSettings.Properties.GenerateThumbnailsFromFiles;
                     }
 
+                    if (_settings.UseThumbnails != overloadSettings.Properties.UseThumbnails)
+                    {
+                        _settings.UseThumbnails = overloadSettings.Properties.UseThumbnails;
+                    }
+
                     if (_settings.ShouldUsePinyin != overloadSettings.Properties.UsePinyin)
                     {
                         _settings.ShouldUsePinyin = overloadSettings.Properties.UsePinyin;
